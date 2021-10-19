@@ -10,6 +10,9 @@ class ToggleImg:
         cv2.namedWindow('window')
 
     def callback(self, event, x, y, flags, param):
+        """
+        左クリックで画像をトグル
+        """
         if event == cv2.EVENT_LBUTTONDOWN:
             self.img = self.img_2 if np.array_equal(
                 self.img, self.img_1) else self.img_1
@@ -18,6 +21,7 @@ class ToggleImg:
         cv2.setMouseCallback('window', self.callback)
         while True:
             cv2.imshow('window', self.img)
+            # spaceで終了
             if cv2.waitKey(10) & 0xFF == ord(' '):
                 break
         cv2.destroyAllWindows()
