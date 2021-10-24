@@ -54,14 +54,17 @@ class PaintTool:
     BLACK = (0, 0, 0)
     LIGHTGRAY = (64, 64, 64)
 
-    def __init__(self, width=512, height=512):
+    def __init__(self, width=512, height=512, choices=None):
         self.line_color = self.BLACK
         self.line_width = 1
         self.is_drawing = False
         self.width = width
         self.height = height
         self.canvas = self.init_img(self.width, self.height, self.WHITE)
-        self.pallette_list = self.init_pallette_list()
+        if choices is None:
+            self.pallette_list = self.init_pallette_list()
+        else:
+            self.pallette_list = self.init_pallette_list(choices)
         self.pallette = self.init_pallette()
         self.img = self.canvas.copy()
 
@@ -89,28 +92,26 @@ class PaintTool:
         img[:] = color
         return img
 
-    def init_pallette_list(self):
+    def init_pallette_list(self, choices=[
+        (RED, PalletteElementCategory.COLOR),
+        (GREEN, PalletteElementCategory.COLOR),
+        (BLUE, PalletteElementCategory.COLOR),
+        (YELLOW, PalletteElementCategory.COLOR),
+        (ORANGE, PalletteElementCategory.COLOR),
+        (BLACK, PalletteElementCategory.COLOR),
+        (LIGHTGRAY, PalletteElementCategory.THICK),
+        (LIGHTGRAY, PalletteElementCategory.THIN),
+    ]):
         """
         パレットリストを初期化する
         """
-        # TODO: 引数で取得してユーザーが設定できるようにする
         # TODO: 6色, Thick, Thinで固定されているが、色の数を可変式にする
-        choices = [
-            (self.RED, PalletteElementCategory.COLOR),
-            (self.GREEN, PalletteElementCategory.COLOR),
-            (self.BLUE, PalletteElementCategory.COLOR),
-            (self.YELLOW, PalletteElementCategory.COLOR),
-            (self.ORANGE, PalletteElementCategory.COLOR),
-            (self.BLACK, PalletteElementCategory.COLOR),
-            (self.LIGHTGRAY, PalletteElementCategory.THICK),
-            (self.LIGHTGRAY, PalletteElementCategory.THIN),
-        ]
         pallette_list = []
         for i, color_category in enumerate(choices):
             pallette_list.append(PalletteElement(
                 color_category[0],
-                ((0, self.width // 8 * i),
-                 (self.width // 8, self.width // 8 * (i + 1))),
+                ((0, self.height // 8 * i),
+                 (self.height // 8, self.height // 8 * (i + 1))),
                 color_category[1]
             )
             )
@@ -121,7 +122,7 @@ class PaintTool:
         palletteを初期化します
         COLORであれば長方形で、THICK or THINであればcircleでElementを描画します
         """
-        pallette = self.init_img(self.width // 8, self.height, self.WHITE)
+        pallette = self.init_img(self.height // 8, self.height, self.WHITE)
         for pallette_element in self.pallette_list:
             if pallette_element.category == PalletteElementCategory.COLOR:
                 cv2.rectangle(pallette, pallette_element.position[0],
@@ -130,11 +131,11 @@ class PaintTool:
             elif pallette_element.category == PalletteElementCategory.THICK:
                 cv2.circle(pallette, (pallette_element.position[0][0] + pallette_element.position[1][0] // 2,
                            pallette_element.position[0][1] + (
-                    pallette_element.position[1][1] - pallette_element.position[0][1]) // 2), self.width // 18, pallette_element.color, -1)
+                    pallette_element.position[1][1] - pallette_element.position[0][1]) // 2), self.height // 18, pallette_element.color, -1)
             elif pallette_element.category == PalletteElementCategory.THIN:
                 cv2.circle(pallette, (pallette_element.position[0][0] + pallette_element.position[1][0] // 2,
                            pallette_element.position[0][1] + (
-                    pallette_element.position[1][1] - pallette_element.position[0][1]) // 2), self.width // 24, pallette_element.color, thickness=-1)
+                    pallette_element.position[1][1] - pallette_element.position[0][1]) // 2), self.height // 24, pallette_element.color, thickness=-1)
         return pallette
 
     def callback(self, event, x, y, flags, param):
@@ -158,6 +159,8 @@ class PaintTool:
                 elif pallette_element.category == PalletteElementCategory.THIN:
                     if pallette_element.position[0][0] < x < pallette_element.position[1][0] and pallette_element.position[0][1] < y < pallette_element.position[1][1]:
                         self.line_width -= 1
+                        if self.line_width < 1:
+                            self.line_width = 1
                         break
             self.pre_x = x
             self.pre_y = y
@@ -173,7 +176,7 @@ class PaintTool:
 
         self.img = self.canvas.copy()
         # imgにpalletteを重ねる
-        self.img[:, 0:self.width // 8] = self.pallette
+        self.img[:, 0:self.height // 8] = self.pallette
 
     def run(self):
         cv2.setMouseCallback('paint_tool', self.callback)
@@ -185,7 +188,16 @@ class PaintTool:
 
 
 def main():
-    paint_tool = PaintTool()
+    paint_tool = PaintTool(width=1900, height=1000, choices=[
+        (PaintTool.RED, PalletteElementCategory.COLOR),
+        (PaintTool.GREEN, PalletteElementCategory.COLOR),
+        (PaintTool.CYAN, PalletteElementCategory.COLOR),
+        (PaintTool.YELLOW, PalletteElementCategory.COLOR),
+        (PaintTool.PURPLE, PalletteElementCategory.COLOR),
+        (PaintTool.BLACK, PalletteElementCategory.COLOR),
+        (PaintTool.LIGHTGRAY, PalletteElementCategory.THICK),
+        (PaintTool.LIGHTGRAY, PalletteElementCategory.THIN),
+    ])
     paint_tool.run()
 
 
