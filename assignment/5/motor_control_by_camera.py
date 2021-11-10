@@ -45,6 +45,12 @@ def get_max_contour(contours):
 class Color:
     """
     色を表すクラス
+
+    hue: 色相
+    name: 色名
+    bgr: 色のBGR値
+    min_hue: 色相の許容最小値
+    max_hue: 色相の許容最大値
     """
     ACCEPTABLE_ERROR = 10
 
@@ -75,12 +81,11 @@ def main():
     colors = [blue, orange, green]
     SATURATION_THRESHOLD = 128
 
-    stream = io.BytesIO()
-
-    # ロボットの初期化 stopも行っておく
+    # ロボットの初期化 (stopも行っておく)
     robot = Robot(left=(17, 18), right=(19, 20))
     robot.stop()
 
+    stream = io.BytesIO()
     with picamera.PiCamera() as camera:
         camera.resolution = (640, 480)
         camera.hflip = True
