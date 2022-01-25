@@ -1,0 +1,15 @@
+{% extends "template.html" %}
+{% block content %}
+<form method="post" action="/send" enctype="multipart/form-data">
+  <input type="file" name="img_file" onchange="submit(this.form)"/>
+</form>
+
+<p>
+  {% if raw_img_url %}
+    <img width="320" src="{{ raw_img_url }}"/>
+  {% endif %}
+  {% if after_img_url %}
+    <img width="320"src="{{ after_img_url }}"/>
+  {% endif %}
+</p>
+{% endblock %}
